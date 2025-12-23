@@ -1,29 +1,35 @@
 package com.example.saanp;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
 public class CollisionSystem {
 
     public static void resolve(Collection<Player> players, List<Food> foods) {
 
-        // Snake eats food
+        List<Food> foodToRemove = new ArrayList<>();
+        List<Player> deadPlayers = new ArrayList<>();
+
+        // 🟢 Snake eats food
         for (Player p : players) {
-            Iterator<Food> it = foods.iterator();
-            while (it.hasNext()) {
-                Food f = it.next();
+            if (p.snake.dead) continue;
+
+            for (Food f : foods) {
                 float dx = p.snake.x - f.x;
                 float dy = p.snake.y - f.y;
+
                 if (dx * dx + dy * dy < p.snake.radius * p.snake.radius) {
                     p.snake.radius += f.value;
-                    it.remove();
+                    foodToRemove.add(f);
                 }
             }
         }
 
-        // Snake vs snake
+        // 🟢 Snake vs snake
         for (Player a : players) {
+            if (a.snake.dead) continue;
+
             for (Player b : players) {
                 if (a == b) continue;
 
@@ -33,19 +39,18 @@ public class CollisionSystem {
 
                 if (distSq < b.snake.radius * b.snake.radius * 0.8f) {
                     a.snake.dead = true;
+                    deadPlayers.add(a);
+                    break;
                 }
             }
         }
 
-        // Handle deaths
-        Iterator<Player> pit = players.iterator();
-        while (pit.hasNext()) {
-            Player p = pit.next();
-            if (p.snake.dead) {
-                dropFood(p, foods);
-                pit.remove();
-                p.channel.close();
-            }
+        // 🟢 Apply removals SAFELY
+        foods.removeAll(foodToRemove);
+
+        for (Player p : deadPlayers) {
+            dropFood(p, foods);
+            p.channel.close(); // channel closes → GameLoop cleanup removes player
         }
     }
 
