@@ -27,27 +27,24 @@ public class GameLoop {
     }
 
     private void tick() {
+        try {
+            room.update();
+            room.removeInactivePlayers(System.currentTimeMillis());
+            Protocol.broadcast(room);
+        } catch (Throwable t) {
+            System.err.println("[FATAL] GameLoop error");
+            t.printStackTrace();
+        }
 
         long now = System.currentTimeMillis();
-
-        // 1️⃣ Update world
-        room.update();
-
-        // 2️⃣ Remove stale players (ONLY HERE)
-        room.removeInactivePlayers(now);
-
-        // 3️⃣ Broadcast snapshot
-        Protocol.broadcast(room);
-
-        // 4️⃣ Log once per second
         if (now - lastLogTime > 1000) {
             System.out.println(
-                    "[LOOP] tick players=" + room.getPlayers().size() +
-                            " food=" + room.getFoods().size()
+                    "[LOOP] tick players=" + room.getPlayers().size()
             );
             lastLogTime = now;
         }
     }
+
 
 
     public void stop() {

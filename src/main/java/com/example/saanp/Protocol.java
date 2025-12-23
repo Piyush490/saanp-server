@@ -52,7 +52,12 @@ public class Protocol {
 
         // Broadcast to all players
         for (Player p : room.getPlayers()) {
-            p.channel.writeAndFlush(new TextWebSocketFrame(json));
+            if (!p.channel.isActive()) {
+                continue;
+            }
+            p.channel.eventLoop().execute(() ->
+                    p.channel.writeAndFlush(new TextWebSocketFrame(json))
+            );
         }
     }
 }
