@@ -3,7 +3,12 @@ package com.example.saanp;
 public class ServerMain {
 
     public static void main(String[] args) throws Exception {
-        NettyServer server = new NettyServer(8080);
+
+        int port = Integer.parseInt(
+                System.getenv().getOrDefault("PORT", "8080")
+        );
+
+        NettyServer server = new NettyServer(port);
         server.start();
     }
 }

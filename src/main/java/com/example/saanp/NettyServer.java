@@ -23,7 +23,7 @@ public class NettyServer {
                     .channel(NioServerSocketChannel.class)
                     .childHandler(new WebSocketInitializer());
 
-            ChannelFuture f = b.bind(port).sync();
+            ChannelFuture f = b.bind("0.0.0.0", port).sync();
             System.out.println("SAANP server running on port " + port);
             f.channel().closeFuture().sync();
         } finally {
