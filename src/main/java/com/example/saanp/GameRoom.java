@@ -42,6 +42,9 @@ public class GameRoom {
 
     public void addPlayer(Player p) {
         players.add(p);
+        System.out.println(
+                "[ROOM] Player added. totalPlayers=" + players.size()
+        );
     }
 
     public void removePlayer(Player p) {
@@ -50,6 +53,9 @@ public class GameRoom {
 
     public void removePlayerByChannel(Channel channel) {
         players.removeIf(p -> p.channel == channel);
+        System.out.println(
+                "[ROOM] Player removed. totalPlayers=" + players.size()
+        );
     }
 
     public List<Player> getPlayers() {

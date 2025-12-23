@@ -7,6 +7,9 @@ import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 public class Protocol {
 
     public static void broadcast(GameRoom room) {
+        System.out.println(
+                "[PROTO] Broadcasting snapshot to " + room.getPlayers().size() + " players"
+        );
 
         JsonObject root = new JsonObject();
         root.addProperty("type", "snapshot");

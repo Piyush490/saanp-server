@@ -39,6 +39,11 @@ public class WebSocketHandler extends SimpleChannelInboundHandler<TextWebSocketF
                     if (player == null) {
                         String name = data.get("name").getAsString();
                         int color = data.get("color").getAsInt();
+                        System.out.println(
+                                "[WS] JOIN name=" + name +
+                                        " color=" + color +
+                                        " channel=" + ctx.channel().id().asShortText()
+                        );
 
                         player = new Player(ctx.channel(), name, color);
                         gameRoom.addPlayer(player);

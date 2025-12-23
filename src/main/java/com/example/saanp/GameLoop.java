@@ -10,6 +10,8 @@ public class GameLoop {
     private final GameRoom room;
     private final ScheduledExecutorService executor =
             Executors.newSingleThreadScheduledExecutor();
+    private long lastLogTime = 0;
+
 
     public GameLoop(GameRoom room) {
         this.room = room;
@@ -27,6 +29,14 @@ public class GameLoop {
     private void tick() {
         room.update();
         Protocol.broadcast(room);
+        long now = System.currentTimeMillis();
+        if (now - lastLogTime > 1000) {
+            System.out.println(
+                    "[LOOP] tick players=" + room.getPlayers().size() +
+                            " food=" + room.getFoods().size()
+            );
+            lastLogTime = now;
+        }
     }
 
     public void stop() {
