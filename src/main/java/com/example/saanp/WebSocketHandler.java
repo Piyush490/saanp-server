@@ -36,20 +36,17 @@ public class WebSocketHandler extends SimpleChannelInboundHandler<TextWebSocketF
             switch (type) {
 
                 case "join":
-                    if (player == null) {
-                        String name = data.get("name").getAsString();
-                        int color = data.get("color").getAsInt();
-                        System.out.println(
-                                "[WS] JOIN name=" + name +
-                                        " color=" + color +
-                                        " channel=" + ctx.channel().id().asShortText()
-                        );
-
-                        player = new Player(ctx.channel(), name, color);
-                        gameRoom.addPlayer(player);
-
-                        gameRoom.addPlayer(player);
+                    if (player != null) {
+                        System.out.println("[WS] Duplicate join ignored for " +
+                                ctx.channel().id().asShortText());
+                        return;
                     }
+
+                    String name = data.get("name").getAsString();
+                    int color = data.get("color").getAsInt();
+
+                    player = new Player(ctx.channel(), name, color);
+                    gameRoom.addPlayer(player);
                     break;
 
                 case "input":

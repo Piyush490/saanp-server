@@ -3,6 +3,7 @@ package com.example.saanp;
 import io.netty.channel.Channel;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class GameRoom {
@@ -16,7 +17,7 @@ public class GameRoom {
     private static final int MAX_FOOD = 300;
     private static final float MAP_SIZE = 5000f;
 
-    private final List<Player> players = new CopyOnWriteArrayList<>();
+    private final Map<String, Player> players = new ConcurrentHashMap<>();
     private final List<Food> foods = new CopyOnWriteArrayList<>();
     private final GameLoop loop = new GameLoop(this);
 
@@ -41,25 +42,25 @@ public class GameRoom {
     }
 
     public void addPlayer(Player p) {
-        players.add(p);
-        System.out.println(
-                "[ROOM] Player added. totalPlayers=" + players.size()
-        );
-    }
+        String id = p.channel.id().asShortText();
 
-    public void removePlayer(Player p) {
-        players.remove(p);
+        if (players.containsKey(id)) {
+            System.out.println("[ROOM] Player already exists: " + id);
+            return;
+        }
+
+        players.put(id, p);
+        System.out.println("[ROOM] Player added. totalPlayers=" + players.size());
     }
 
     public void removePlayerByChannel(Channel channel) {
-        players.removeIf(p -> p.channel == channel);
-        System.out.println(
-                "[ROOM] Player removed. totalPlayers=" + players.size()
-        );
+        String id = channel.id().asShortText();
+        players.remove(id);
+        System.out.println("[ROOM] Player removed. totalPlayers=" + players.size());
     }
 
-    public List<Player> getPlayers() {
-        return players;
+    public Collection<Player> getPlayers() {
+        return players.values();
     }
 
     public List<Food> getFoods() {
@@ -67,14 +68,19 @@ public class GameRoom {
     }
 
     public void update() {
-        for (Player p : players) {
+
+        // 1️⃣ Update player movement
+        for (Player p : players.values()) {
             p.snake.update(p.inputAngle, p.boosting);
         }
 
-        CollisionSystem.resolve(players, foods);
+        // 2️⃣ Resolve collisions
+        CollisionSystem.resolve(players.values(), foods);
 
+        // 3️⃣ Refill food
         while (foods.size() < MAX_FOOD) {
             foods.add(randomFood());
         }
     }
+
 }

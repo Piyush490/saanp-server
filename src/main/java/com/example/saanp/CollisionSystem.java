@@ -1,11 +1,12 @@
 package com.example.saanp;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
 public class CollisionSystem {
 
-    public static void resolve(List<Player> players, List<Food> foods) {
+    public static void resolve(Collection<Player> players, List<Food> foods) {
 
         // Snake eats food
         for (Player p : players) {
