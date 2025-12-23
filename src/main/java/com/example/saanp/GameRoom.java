@@ -1,9 +1,17 @@
 package com.example.saanp;
 
+import io.netty.channel.Channel;
+
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class GameRoom {
+
+    private static final GameRoom INSTANCE = new GameRoom();
+
+    public static GameRoom getInstance() {
+        return INSTANCE;
+    }
 
     private static final int MAX_FOOD = 300;
     private static final float MAP_SIZE = 5000f;
@@ -12,7 +20,8 @@ public class GameRoom {
     private final List<Food> foods = new CopyOnWriteArrayList<>();
     private final GameLoop loop = new GameLoop(this);
 
-    public GameRoom() {
+    // 🔒 private constructor
+    private GameRoom() {
         spawnInitialFood();
         loop.start();
     }
@@ -37,6 +46,10 @@ public class GameRoom {
 
     public void removePlayer(Player p) {
         players.remove(p);
+    }
+
+    public void removePlayerByChannel(Channel channel) {
+        players.removeIf(p -> p.channel == channel);
     }
 
     public List<Player> getPlayers() {

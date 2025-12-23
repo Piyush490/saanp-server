@@ -5,12 +5,19 @@ import io.netty.channel.Channel;
 public class Player {
 
     public final Channel channel;
-    public final Snake snake = new Snake();
 
-    public volatile double inputAngle = 0;
-    public volatile boolean boosting = false;
+    public final String name;
+    public final int color;
 
-    public Player(Channel channel) {
+    public final Snake snake;
+
+    public float inputAngle;
+    public boolean boosting;
+
+    public Player(Channel channel, String name, int color) {
         this.channel = channel;
+        this.name = name;
+        this.color = color;
+        this.snake = new Snake();
     }
 }
