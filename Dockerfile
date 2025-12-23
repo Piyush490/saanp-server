@@ -2,7 +2,7 @@
 FROM gradle:8.5-jdk17 AS build
 WORKDIR /app
 COPY . .
-RUN gradle clean build --no-daemon
+RUN gradle shadowJar --no-daemon
 
 # -------- RUNTIME STAGE --------
 FROM eclipse-temurin:17-jre
