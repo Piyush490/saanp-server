@@ -82,5 +82,22 @@ public class GameRoom {
             foods.add(randomFood());
         }
     }
+    public void removeInactivePlayers(long now) {
+
+        players.values().removeIf(p -> {
+            boolean inactive =
+                    !p.channel.isActive() &&
+                            now - p.lastSeen > 10_000;
+
+            if (inactive) {
+                System.out.println(
+                        "[ROOM] Removing inactive player " +
+                                p.channel.id().asShortText()
+                );
+            }
+
+            return inactive;
+        });
+    }
 
 }

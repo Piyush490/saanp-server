@@ -27,9 +27,19 @@ public class GameLoop {
     }
 
     private void tick() {
-        room.update();
-        Protocol.broadcast(room);
+
         long now = System.currentTimeMillis();
+
+        // 1️⃣ Update world
+        room.update();
+
+        // 2️⃣ Remove stale players (ONLY HERE)
+        room.removeInactivePlayers(now);
+
+        // 3️⃣ Broadcast snapshot
+        Protocol.broadcast(room);
+
+        // 4️⃣ Log once per second
         if (now - lastLogTime > 1000) {
             System.out.println(
                     "[LOOP] tick players=" + room.getPlayers().size() +
@@ -38,6 +48,7 @@ public class GameLoop {
             lastLogTime = now;
         }
     }
+
 
     public void stop() {
         executor.shutdownNow();

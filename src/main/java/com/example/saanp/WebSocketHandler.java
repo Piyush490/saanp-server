@@ -19,11 +19,15 @@ public class WebSocketHandler extends SimpleChannelInboundHandler<TextWebSocketF
     @Override
     public void handlerRemoved(ChannelHandlerContext ctx) {
         System.out.println("Client disconnected: " + ctx.channel().id());
-        gameRoom.removePlayerByChannel(ctx.channel());
+        System.out.println("[WS] Channel closed: " +
+                ctx.channel().id().asShortText());
     }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, TextWebSocketFrame msg) {
+        if (player != null) {
+            player.lastSeen = System.currentTimeMillis();
+        }
 
         String text = msg.text().trim();
         if (!text.startsWith("{")) return;

@@ -13,11 +13,14 @@ public class Player {
 
     public float inputAngle;
     public boolean boosting;
+    public long lastSeen;
+
 
     public Player(Channel channel, String name, int color) {
         this.channel = channel;
         this.name = name;
         this.color = color;
         this.snake = new Snake();
+        this.lastSeen = System.currentTimeMillis();
     }
 }
