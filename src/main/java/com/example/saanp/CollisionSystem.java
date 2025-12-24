@@ -74,17 +74,13 @@ public class CollisionSystem {
     }
 
     /**
-     * Proper Slither-style collision: 
-     * A snake dies if its HEAD touches ANY part of another snake's BODY.
+     * Accurately check if a snake's head has collided with another snake's body.
+     * Only the snake who 'bumps' into a body dies.
      */
     private static boolean isHeadCollidingWithAnyBody(Snake headSnake, List<Snake> allSnakes) {
         for (Snake otherSnake : allSnakes) {
-            // Can't die by touching your own head, but you CAN die by touching your own body 
-            // if you make a sharp U-turn (like real slither).
-            
-            // Iterate through the other snake's body segments
-            // We skip the first few segments of the head itself to prevent accidental self-collision
-            int startIndex = (headSnake == otherSnake) ? 10 : 0;
+            // Self-collision buffer (can only hit your own tail after 15 segments)
+            int startIndex = (headSnake == otherSnake) ? 15 : 0;
             
             for (int i = startIndex; i < otherSnake.segments.size(); i++) {
                 Snake.Point segment = otherSnake.segments.get(i);
@@ -93,11 +89,11 @@ public class CollisionSystem {
                 float dy = headSnake.y - segment.y;
                 float distSq = dx * dx + dy * dy;
                 
-                // collisionDist: Sum of radii (head radius + body segment radius)
+                // collisionDist: head radius + segment radius
                 float collisionDist = headSnake.radius + otherSnake.radius;
                 
-                // If head overlaps with any body segment
-                if (distSq < (collisionDist * collisionDist) * 0.8f) {
+                // Die only if YOUR head touches ANY part of the body
+                if (distSq < (collisionDist * collisionDist) * 0.75f) {
                     return true;
                 }
             }
