@@ -30,8 +30,7 @@ public class CollisionSystem {
         // Check Players for death
         for (Player p : players) {
             if (p.snake.dead) continue;
-            // Only check head-to-body collisions, ignore head-to-self
-            if (checkSnakeDeath(p.snake, allSnakes)) {
+            if (isHeadCollidingWithAnyBody(p.snake, allSnakes)) {
                 p.snake.dead = true;
                 deadPlayers.add(p);
             }
@@ -40,7 +39,7 @@ public class CollisionSystem {
         // Check Bots for death
         for (Bot b : bots) {
             if (b.snake.dead) continue;
-            if (checkSnakeDeath(b.snake, allSnakes)) {
+            if (isHeadCollidingWithAnyBody(b.snake, allSnakes)) {
                 b.snake.dead = true;
                 deadBots.add(b);
             }
@@ -75,30 +74,39 @@ public class CollisionSystem {
     }
 
     /**
-     * Accurately check if a snake's head has collided with another snake's body.
+     * Proper Slither-style collision: 
+     * A snake dies if its HEAD touches ANY part of another snake's BODY.
      */
-    private static boolean checkSnakeDeath(Snake head, List<Snake> allSnakes) {
-        for (Snake other : allSnakes) {
-            // NEVER die by touching yourself
-            if (head == other) continue;
+    private static boolean isHeadCollidingWithAnyBody(Snake headSnake, List<Snake> allSnakes) {
+        for (Snake otherSnake : allSnakes) {
+            // Can't die by touching your own head, but you CAN die by touching your own body 
+            // if you make a sharp U-turn (like real slither).
             
-            float dx = head.x - other.x;
-            float dy = head.y - other.y;
-            float distSq = dx * dx + dy * dy;
+            // Iterate through the other snake's body segments
+            // We skip the first few segments of the head itself to prevent accidental self-collision
+            int startIndex = (headSnake == otherSnake) ? 10 : 0;
             
-            // Collision occurs when the head overlaps with another snake's body
-            // We use a tight threshold (0.8 of combined radii) to avoid accidental deaths
-            float collisionDist = head.radius + other.radius;
-            if (distSq < (collisionDist * collisionDist) * 0.65f) {
-                return true;
+            for (int i = startIndex; i < otherSnake.segments.size(); i++) {
+                Snake.Point segment = otherSnake.segments.get(i);
+                
+                float dx = headSnake.x - segment.x;
+                float dy = headSnake.y - segment.y;
+                float distSq = dx * dx + dy * dy;
+                
+                // collisionDist: Sum of radii (head radius + body segment radius)
+                float collisionDist = headSnake.radius + otherSnake.radius;
+                
+                // If head overlaps with any body segment
+                if (distSq < (collisionDist * collisionDist) * 0.8f) {
+                    return true;
+                }
             }
         }
         return false;
     }
 
     private static void dropFood(Snake s, List<Food> foods) {
-        // Drop food proportional to size, but not overwhelming
-        int count = Math.min(s.score, 100); 
+        int count = Math.min(s.score, 150); 
         for (int i = 0; i < count; i++) {
             foods.add(new Food(
                     s.x + (float) (Math.random() * 150 - 75),
