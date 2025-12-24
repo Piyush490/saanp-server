@@ -66,6 +66,12 @@ public class WebSocketHandler extends SimpleChannelInboundHandler<TextWebSocketF
                         player.boosting = data.get("boosting").getAsBoolean();
                     }
                     break;
+
+                case "dead":
+                    if (player != null) {
+                        player.snake.dead = true;
+                    }
+                    break;
             }
 
         } catch (Exception e) {

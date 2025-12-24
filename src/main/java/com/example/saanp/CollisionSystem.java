@@ -81,11 +81,17 @@ public class CollisionSystem {
     }
 
     private static void checkFood(Snake s, List<Food> foods, List<Food> toRemove) {
+        // Mouth distance for magnet effect: how far the snake can "reach"
+        float mouthReach = s.radius * 2.5f; 
+        
         for (Food f : foods) {
             float dx = s.x - f.x;
             float dy = s.y - f.y;
-            if (dx * dx + dy * dy < s.radius * s.radius) {
-                s.score++; // Increment score
+            float dSq = dx * dx + dy * dy;
+            
+            // If food is within reach, it's considered eaten
+            if (dSq < mouthReach * mouthReach) {
+                s.score++;
                 
                 float growthFactor = 0.1f;
                 if (s.radius > 30) growthFactor = 0.05f;
@@ -109,7 +115,6 @@ public class CollisionSystem {
     }
 
     private static void dropFood(Snake s, List<Food> foods) {
-        // Drop food equal to score
         for (int i = 0; i < s.score; i++) {
             foods.add(new Food(
                     s.x + (float) (Math.random() * 120 - 60),
