@@ -12,8 +12,10 @@ public class Protocol {
 
         JsonObject data = new JsonObject();
 
-        // Players
+        // Players + Bots
         JsonArray playersArray = new JsonArray();
+        
+        // Add human players
         for (Player p : room.getPlayers()) {
             JsonObject po = new JsonObject();
             po.addProperty("id", p.channel.id().asShortText());
@@ -25,11 +27,23 @@ public class Protocol {
             po.addProperty("color", p.color);
             playersArray.add(po);
 
-            // If player just died, send a gameOver message to them specifically
             if (p.snake.dead && !p.gameOverSent) {
                 sendGameOver(p);
                 p.gameOverSent = true;
             }
+        }
+
+        // Add bots (so they appear on client)
+        for (Bot b : room.getBots()) {
+            JsonObject bo = new JsonObject();
+            bo.addProperty("id", b.id);
+            bo.addProperty("x", b.snake.x);
+            bo.addProperty("y", b.snake.y);
+            bo.addProperty("angle", b.snake.angle);
+            bo.addProperty("radius", b.snake.radius);
+            bo.addProperty("dead", b.snake.dead);
+            bo.addProperty("color", b.color);
+            playersArray.add(bo);
         }
 
         // Food
@@ -47,7 +61,7 @@ public class Protocol {
 
         String json = root.toString();
 
-        // Broadcast to all players
+        // Broadcast to all active human players
         for (Player p : room.getPlayers()) {
             if (!p.channel.isActive()) continue;
             p.channel.writeAndFlush(new TextWebSocketFrame(json));

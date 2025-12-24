@@ -19,11 +19,6 @@ public class GameRoom {
     public static final float MAP_SIZE = 10000f; 
     public static final float MAP_RADIUS = 5000f; 
 
-    private final Map<String, Player> players = new ConcurrentHashMap<>();
-    private final List<Bot> bots = new CopyOnWriteArrayList<>();
-    private final List<Food> foods = new CopyOnWriteArrayList<>();
-    private final GameLoop loop = new GameLoop(this);
-
     private static final int[] BOT_COLORS = {
         0xFFFF0000, // Red
         0xFF00FF00, // Green
@@ -36,6 +31,11 @@ public class GameRoom {
         0xFFFFC0CB, // Pink
         0xFFFFFFFF  // White
     };
+
+    private final Map<String, Player> players = new ConcurrentHashMap<>();
+    private final List<Bot> bots = new CopyOnWriteArrayList<>();
+    private final List<Food> foods = new CopyOnWriteArrayList<>();
+    private final GameLoop loop = new GameLoop(this);
 
     // 🔒 private constructor
     private GameRoom() {
