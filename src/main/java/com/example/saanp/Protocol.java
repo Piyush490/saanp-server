@@ -25,7 +25,8 @@ public class Protocol {
             po.addProperty("y", p.snake.y);
             po.addProperty("angle", p.snake.angle);
             po.addProperty("radius", p.snake.radius);
-            po.addProperty("score", (int) p.snake.radius); // Added score
+            po.addProperty("score", (int) p.snake.radius);
+            po.addProperty("boosting", p.boosting); // Fixed: Added missing field
             po.addProperty("dead", p.snake.dead);
             po.addProperty("color", p.color);
             playersArray.add(po);
@@ -46,7 +47,8 @@ public class Protocol {
             bo.addProperty("y", b.snake.y);
             bo.addProperty("angle", b.snake.angle);
             bo.addProperty("radius", b.snake.radius);
-            bo.addProperty("score", (int) b.snake.radius); // Added score
+            bo.addProperty("score", (int) b.snake.radius);
+            bo.addProperty("boosting", false); // Bots don't boost currently
             bo.addProperty("dead", b.snake.dead);
             bo.addProperty("color", b.color);
             playersArray.add(bo);

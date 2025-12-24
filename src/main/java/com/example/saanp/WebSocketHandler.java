@@ -36,6 +36,8 @@ public class WebSocketHandler extends SimpleChannelInboundHandler<TextWebSocketF
         try {
             JsonObject json = JsonParser.parseString(text).getAsJsonObject();
             String type = json.get("type").getAsString();
+            
+            if (!json.has("data")) return;
             JsonObject data = json.getAsJsonObject("data");
 
             switch (type) {
