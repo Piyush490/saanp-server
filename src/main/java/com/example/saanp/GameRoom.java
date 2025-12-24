@@ -15,16 +15,32 @@ public class GameRoom {
     }
 
     private static final int MAX_FOOD = 300;
-    public static final float MAP_SIZE = 10000f; // Total width/height
-    public static final float MAP_RADIUS = 5000f; // Radius from center
+    private static final int MAX_BOTS = 10;
+    public static final float MAP_SIZE = 10000f; 
+    public static final float MAP_RADIUS = 5000f; 
 
     private final Map<String, Player> players = new ConcurrentHashMap<>();
+    private final List<Bot> bots = new CopyOnWriteArrayList<>();
     private final List<Food> foods = new CopyOnWriteArrayList<>();
     private final GameLoop loop = new GameLoop(this);
+
+    private static final int[] BOT_COLORS = {
+        0xFFFF0000, // Red
+        0xFF00FF00, // Green
+        0xFF0000FF, // Blue
+        0xFFFFFF00, // Yellow
+        0xFFFF00FF, // Magenta
+        0xFF00FFFF, // Cyan
+        0xFFFFA500, // Orange
+        0xFF800080, // Purple
+        0xFFFFC0CB, // Pink
+        0xFFFFFFFF  // White
+    };
 
     // 🔒 private constructor
     private GameRoom() {
         spawnInitialFood();
+        spawnInitialBots();
         loop.start();
     }
 
@@ -34,8 +50,14 @@ public class GameRoom {
         }
     }
 
+    private void spawnInitialBots() {
+        String[] names = {"SlitherBot", "SaanpAI", "DroidSnake", "Nibbler", "PythonBot", "Viper", "CobraBot", "Mamba", "Anaconda", "Boa"};
+        for (int i = 0; i < MAX_BOTS; i++) {
+            bots.add(new Bot(names[i % names.length], BOT_COLORS[i % BOT_COLORS.length]));
+        }
+    }
+
     private Food randomFood() {
-        // Random point inside circular map
         double angle = Math.random() * Math.PI * 2;
         double radius = Math.sqrt(Math.random()) * MAP_RADIUS;
         float x = (float) (MAP_RADIUS + Math.cos(angle) * radius);
@@ -46,24 +68,21 @@ public class GameRoom {
 
     public void addPlayer(Player p) {
         String id = p.channel.id().asShortText();
-
-        if (players.containsKey(id)) {
-            System.out.println("[ROOM] Player already exists: " + id);
-            return;
-        }
-
+        if (players.containsKey(id)) return;
         players.put(id, p);
-        System.out.println("[ROOM] Player added. totalPlayers=" + players.size());
     }
 
     public void removePlayerByChannel(Channel channel) {
         String id = channel.id().asShortText();
         players.remove(id);
-        System.out.println("[ROOM] Player removed. totalPlayers=" + players.size());
     }
 
     public Collection<Player> getPlayers() {
         return players.values();
+    }
+
+    public List<Bot> getBots() {
+        return bots;
     }
 
     public List<Food> getFoods() {
@@ -71,36 +90,32 @@ public class GameRoom {
     }
 
     public void update() {
-
-        // 1️⃣ Update player movement
+        // 1️⃣ Update players
         for (Player p : players.values()) {
             p.snake.update(p.inputAngle, p.boosting);
         }
 
-        // 2️⃣ Resolve collisions
-        CollisionSystem.resolve(players.values(), foods);
+        // 2️⃣ Update bots
+        List<Player> playerList = new ArrayList<>(players.values());
+        for (Bot b : bots) {
+            b.update(foods, playerList, bots);
+        }
 
-        // 3️⃣ Refill food
+        // 3️⃣ Resolve collisions
+        CollisionSystem.resolve(players.values(), bots, foods);
+
+        // 4️⃣ Refill food and bots
         while (foods.size() < MAX_FOOD) {
             foods.add(randomFood());
         }
+        if (bots.size() < MAX_BOTS) {
+            String[] names = {"BotBuddy", "Snakey", "AI_Player", "Crawler", "Hunter", "Stalker"};
+            int randomColor = BOT_COLORS[(int)(Math.random() * BOT_COLORS.length)];
+            bots.add(new Bot(names[(int)(Math.random() * names.length)], randomColor));
+        }
     }
+
     public void removeInactivePlayers(long now) {
-
-        players.values().removeIf(p -> {
-            boolean inactive =
-                    !p.channel.isActive() &&
-                            now - p.lastSeen > 10_000;
-
-            if (inactive) {
-                System.out.println(
-                        "[ROOM] Removing inactive player " +
-                                p.channel.id().asShortText()
-                );
-            }
-
-            return inactive;
-        });
+        players.values().removeIf(p -> !p.channel.isActive() && now - p.lastSeen > 10_000);
     }
-
 }
