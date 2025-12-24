@@ -58,10 +58,8 @@ public class Snake {
         y += Math.sin(angle) * currentSpeed * delta;
 
         // ---- BODY UPDATE ----
-        // Add new head position to segments
         segments.add(0, new Point(x, y));
         
-        // Control length based on score
         int targetLen = 10 + (score / 2);
         if (targetLen > MAX_SEGMENTS) targetLen = MAX_SEGMENTS;
         
@@ -69,7 +67,7 @@ public class Snake {
             segments.remove(segments.size() - 1);
         }
 
-        // ---- BOUNDARY CHECK (Circular) ----
+        // ---- BOUNDARY CHECK ----
         float dx = x - GameRoom.MAP_RADIUS;
         float dy = y - GameRoom.MAP_RADIUS;
         float dist = (float) Math.sqrt(dx * dx + dy * dy);
@@ -79,6 +77,7 @@ public class Snake {
         }
     }
 
+    // Static helper class for coordinates
     public static class Point {
         public float x, y;
         public Point(float x, float y) { this.x = x; this.y = y; }
