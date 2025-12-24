@@ -6,7 +6,7 @@ import java.util.concurrent.TimeUnit;
 
 public class GameLoop {
 
-    private static final int TICK_MS = 50; // 20 TPS
+    public static final int TICK_MS = 33;
     private final GameRoom room;
     private final ScheduledExecutorService executor =
             Executors.newSingleThreadScheduledExecutor();

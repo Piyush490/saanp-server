@@ -45,7 +45,6 @@ public class CollisionSystem {
             }
         }
 
-        // 🟢 Apply removals SAFELY
         foods.removeAll(foodToRemove);
 
         for (Player p : deadPlayers) {
