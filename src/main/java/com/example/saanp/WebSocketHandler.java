@@ -18,9 +18,10 @@ public class WebSocketHandler extends SimpleChannelInboundHandler<TextWebSocketF
 
     @Override
     public void handlerRemoved(ChannelHandlerContext ctx) {
+        if (player != null) {
+            gameRoom.removePlayerByChannel(ctx.channel());
+        }
         System.out.println("Client disconnected: " + ctx.channel().id());
-        System.out.println("[WS] Channel closed: " +
-                ctx.channel().id().asShortText());
     }
 
     @Override
@@ -40,17 +41,21 @@ public class WebSocketHandler extends SimpleChannelInboundHandler<TextWebSocketF
             switch (type) {
 
                 case "join":
-                    if (player != null) {
-                        System.out.println("[WS] Duplicate join ignored for " +
-                                ctx.channel().id().asShortText());
-                        return;
-                    }
+                    if (player != null) return;
 
                     String name = data.get("name").getAsString();
                     int color = data.get("color").getAsInt();
 
                     player = new Player(ctx.channel(), name, color);
                     gameRoom.addPlayer(player);
+
+                    // Send confirmation with ID back to client
+                    JsonObject welcome = new JsonObject();
+                    welcome.addProperty("type", "joined");
+                    JsonObject welcomeData = new JsonObject();
+                    welcomeData.addProperty("id", ctx.channel().id().asShortText());
+                    welcome.add("data", welcomeData);
+                    ctx.channel().writeAndFlush(new TextWebSocketFrame(welcome.toString()));
                     break;
 
                 case "input":

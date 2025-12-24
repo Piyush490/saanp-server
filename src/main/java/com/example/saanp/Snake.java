@@ -8,7 +8,6 @@ public class Snake {
     public float y;
     public double angle = 0;
 
-    public float speed = 140f;   // units per second
     public float radius = 18f;
     public boolean dead = false;
 
@@ -23,27 +22,32 @@ public class Snake {
     public void update(double targetAngle, boolean boost) {
         if (dead) return;
 
+        float delta = TICK_MS / 1000f;
+
         // ---- TURNING ----
         double diff = targetAngle - angle;
-
         // Normalize to [-PI, PI]
         diff = Math.atan2(Math.sin(diff), Math.cos(diff));
 
-        // Turn speed in radians per second
-        // Real Slither turn speed is tighter when smaller and slower when larger/boosting
-        double turnSpeed = 4.5; 
-
-        float delta = TICK_MS / 1000f;
-
+        // Turn speed in radians per second.
+        // Slither turn speed usually scales with snake size, but let's keep it constant for now.
+        double turnSpeed = 3.8; 
+        
         double maxTurnThisTick = turnSpeed * delta;
-        diff = Math.max(-maxTurnThisTick, Math.min(maxTurnThisTick, diff));
-        angle += diff;
+        
+        // Clamp the turn to the max turn speed
+        if (Math.abs(diff) > maxTurnThisTick) {
+            angle += (diff > 0 ? 1 : -1) * maxTurnThisTick;
+        } else {
+            angle = targetAngle;
+        }
 
         // ---- SPEED ----
-        float baseSpeed = 160f;
-        float boostSpeed = 300f;
+        float baseSpeed = 180f;
+        float boostSpeed = 320f;
         float currentSpeed = boost ? boostSpeed : baseSpeed;
 
+        // Always move forward at currentSpeed
         x += Math.cos(angle) * currentSpeed * delta;
         y += Math.sin(angle) * currentSpeed * delta;
 
