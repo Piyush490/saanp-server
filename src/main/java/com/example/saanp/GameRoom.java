@@ -8,39 +8,34 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class GameRoom {
 
-    private static final int MAX_FOOD = 1500;
-    private static final int MAX_BOTS = 30;
-    public static final float MAP_SIZE = 10000f; 
-    public static final float MAP_RADIUS = 5000f; 
+    private static final GameRoom INSTANCE = new GameRoom();
+    public static GameRoom getInstance() { return INSTANCE; }
+
+    private static final int MAX_FOOD = 300;
+    private static final int MAX_BOTS = 10;
+    public static final float MAP_SIZE = 10000f;
+    public static final float MAP_RADIUS = 5000f;
 
     private static final int[] BOT_COLORS = {
-        0xFFFF0000, // Red
-        0xFF00FF00, // Green
-        0xFF0000FF, // Blue
-        0xFFFFFF00, // Yellow
-        0xFFFF00FF, // Magenta
-        0xFF00FFFF, // Cyan
-        0xFFFFA500, // Orange
-        0xFF800080, // Purple
-        0xFFFFC0CB, // Pink
-        0xFFFFFFFF  // White
+            0xFFFF0000, 0xFF00FF00, 0xFF0000FF, 0xFFFFFF00, 0xFFFF00FF,
+            0xFF00FFFF, 0xFFFFA500, 0xFF800080, 0xFFFFC0CB, 0xFFFFFFFF
     };
-
-    private static final GameRoom INSTANCE = new GameRoom();
-
-    public static GameRoom getInstance() {
-        return INSTANCE;
-    }
 
     private final Map<String, Player> players = new ConcurrentHashMap<>();
     private final List<Bot> bots = new CopyOnWriteArrayList<>();
     private final List<Food> foods = new CopyOnWriteArrayList<>();
-    private final GameLoop loop = new GameLoop(this);
+    private final GameLoop loop; // initialized after world is ready
 
-    // 🔒 private constructor
     private GameRoom() {
+        // Build world first (no threads started yet)
         spawnInitialFood();
         spawnInitialBots();
+
+        // If you have a GameLoop with a tick duration, set Snake.TICK_SECONDS accordingly:
+        // Snake.TICK_SECONDS = GameLoop.TICK_MS / 1000f; // ensure GameLoop.TICK_MS is a compile-time constant or harmless
+
+        // Now create and start the loop
+        loop = new GameLoop(this);
         loop.start();
     }
 
@@ -51,9 +46,11 @@ public class GameRoom {
     }
 
     private void spawnInitialBots() {
-        String[] names = {"SlitherBot", "SaanpAI", "DroidSnake", "Nibbler", "PythonBot", "Viper", "CobraBot", "Mamba", "Anaconda", "Boa", "Racer", "Glider"};
+        String[] names = {"SlitherBot", "SaanpAI", "DroidSnake", "Nibbler", "PythonBot", "Viper", "CobraBot", "Mamba", "Anaconda", "Boa"};
         for (int i = 0; i < MAX_BOTS; i++) {
-            bots.add(new Bot(names[i % names.length] + "_" + i, BOT_COLORS[i % BOT_COLORS.length]));
+            String name = names[i % names.length];
+            int color = BOT_COLORS[i % BOT_COLORS.length];
+            bots.add(new Bot(name, color));
         }
     }
 
@@ -62,7 +59,6 @@ public class GameRoom {
         double radius = Math.sqrt(Math.random()) * MAP_RADIUS;
         float x = (float) (MAP_RADIUS + Math.cos(angle) * radius);
         float y = (float) (MAP_RADIUS + Math.sin(angle) * radius);
-        
         return new Food(x, y, 1);
     }
 
@@ -77,41 +73,33 @@ public class GameRoom {
         players.remove(id);
     }
 
-    public Collection<Player> getPlayers() {
-        return players.values();
-    }
-
-    public List<Bot> getBots() {
-        return bots;
-    }
-
-    public List<Food> getFoods() {
-        return foods;
-    }
+    public Collection<Player> getPlayers() { return players.values(); }
+    public List<Bot> getBots() { return bots; }
+    public List<Food> getFoods() { return foods; }
 
     public void update() {
-        // 1️⃣ Update players
+        // Update players
         for (Player p : players.values()) {
             p.snake.update(p.inputAngle, p.boosting);
         }
 
-        // 2️⃣ Update bots
+        // Update bots
         List<Player> playerList = new ArrayList<>(players.values());
         for (Bot b : bots) {
             b.update(foods, playerList, bots);
         }
 
-        // 3️⃣ Resolve collisions
+        // Resolve collisions
         CollisionSystem.resolve(players.values(), bots, foods);
 
-        // 4️⃣ Refill food and bots
+        // Refill food and bots
         while (foods.size() < MAX_FOOD) {
             foods.add(randomFood());
         }
         if (bots.size() < MAX_BOTS) {
-            String[] names = {"BotBuddy", "Snakey", "AI_Player", "Crawler", "Hunter", "Stalker", "Phantom", "Ghost"};
+            String[] names = {"BotBuddy", "Snakey", "AI_Player", "Crawler", "Hunter", "Stalker"};
             int randomColor = BOT_COLORS[(int)(Math.random() * BOT_COLORS.length)];
-            bots.add(new Bot(names[(int)(Math.random() * names.length)] + "_" + (int)(Math.random() * 100), randomColor));
+            bots.add(new Bot(names[(int)(Math.random() * names.length)], randomColor));
         }
     }
 
