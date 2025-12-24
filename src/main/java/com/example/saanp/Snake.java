@@ -30,7 +30,6 @@ public class Snake {
         diff = Math.atan2(Math.sin(diff), Math.cos(diff));
 
         // Turn speed in radians per second.
-        // Slither turn speed usually scales with snake size, but let's keep it constant for now.
         double turnSpeed = 3.8; 
         
         double maxTurnThisTick = turnSpeed * delta;
@@ -54,9 +53,10 @@ public class Snake {
         // ---- BOUNDARY CHECK (Circular) ----
         float dx = x - GameRoom.MAP_RADIUS;
         float dy = y - GameRoom.MAP_RADIUS;
-        float distSq = dx * dx + dy * dy;
+        float dist = (float) Math.sqrt(dx * dx + dy * dy);
 
-        if (distSq > GameRoom.MAP_RADIUS * GameRoom.MAP_RADIUS) {
+        // Die if the head (edge of circle) touches the boundary
+        if (dist + radius > GameRoom.MAP_RADIUS) {
             dead = true;
         }
     }

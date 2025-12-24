@@ -6,40 +6,70 @@ import java.util.List;
 
 public class CollisionSystem {
 
-    public static void resolve(Collection<Player> players, List<Food> foods) {
+    public static void resolve(Collection<Player> players, List<Bot> bots, List<Food> foods) {
 
         List<Food> foodToRemove = new ArrayList<>();
         List<Player> deadPlayers = new ArrayList<>();
+        List<Bot> deadBots = new ArrayList<>();
 
-        // 🟢 Snake eats food
+        // 🟢 Everyone eats food
         for (Player p : players) {
             if (p.snake.dead) continue;
+            checkFood(p.snake, foods, foodToRemove);
+        }
+        for (Bot b : bots) {
+            if (b.snake.dead) continue;
+            checkFood(b.snake, foods, foodToRemove);
+        }
 
-            for (Food f : foods) {
-                float dx = p.snake.x - f.x;
-                float dy = p.snake.y - f.y;
+        // 🟢 Snake vs Snake (Player vs Player, Player vs Bot, Bot vs Bot)
+        // Check Players
+        for (Player p : players) {
+            if (p.snake.dead) continue;
+            
+            // vs other players
+            for (Player other : players) {
+                if (p == other || other.snake.dead) continue;
+                if (checkCollision(p.snake, other.snake)) {
+                    p.snake.dead = true;
+                    deadPlayers.add(p);
+                    break;
+                }
+            }
+            if (p.snake.dead) continue;
 
-                if (dx * dx + dy * dy < p.snake.radius * p.snake.radius) {
-                    p.snake.radius += f.value;
-                    foodToRemove.add(f);
+            // vs bots
+            for (Bot b : bots) {
+                if (b.snake.dead) continue;
+                if (checkCollision(p.snake, b.snake)) {
+                    p.snake.dead = true;
+                    deadPlayers.add(p);
+                    break;
                 }
             }
         }
 
-        // 🟢 Snake vs snake
-        for (Player a : players) {
-            if (a.snake.dead) continue;
+        // Check Bots
+        for (Bot b : bots) {
+            if (b.snake.dead) continue;
 
-            for (Player b : players) {
-                if (a == b) continue;
+            // vs players
+            for (Player p : players) {
+                if (p.snake.dead) continue;
+                if (checkCollision(b.snake, p.snake)) {
+                    b.snake.dead = true;
+                    deadBots.add(b);
+                    break;
+                }
+            }
+            if (b.snake.dead) continue;
 
-                float dx = a.snake.x - b.snake.x;
-                float dy = a.snake.y - b.snake.y;
-                float distSq = dx * dx + dy * dy;
-
-                if (distSq < b.snake.radius * b.snake.radius * 0.8f) {
-                    a.snake.dead = true;
-                    deadPlayers.add(a);
+            // vs other bots
+            for (Bot other : bots) {
+                if (b == other || other.snake.dead) continue;
+                if (checkCollision(b.snake, other.snake)) {
+                    b.snake.dead = true;
+                    deadBots.add(b);
                     break;
                 }
             }
@@ -48,16 +78,39 @@ public class CollisionSystem {
         foods.removeAll(foodToRemove);
 
         for (Player p : deadPlayers) {
-            dropFood(p, foods);
-            p.channel.close(); // channel closes → GameLoop cleanup removes player
+            dropFood(p.snake, foods);
+            p.channel.close(); 
+        }
+        for (Bot b : deadBots) {
+            dropFood(b.snake, foods);
+            bots.remove(b);
         }
     }
 
-    private static void dropFood(Player p, List<Food> foods) {
-        for (int i = 0; i < p.snake.radius; i += 5) {
+    private static void checkFood(Snake s, List<Food> foods, List<Food> toRemove) {
+        for (Food f : foods) {
+            float dx = s.x - f.x;
+            float dy = s.y - f.y;
+            if (dx * dx + dy * dy < s.radius * s.radius) {
+                s.radius += 0.5f; // Slow growth
+                toRemove.add(f);
+            }
+        }
+    }
+
+    private static boolean checkCollision(Snake head, Snake body) {
+        float dx = head.x - body.x;
+        float dy = head.y - body.y;
+        float distSq = dx * dx + dy * dy;
+        // If head is inside the body of another snake
+        return distSq < body.radius * body.radius * 0.8f;
+    }
+
+    private static void dropFood(Snake s, List<Food> foods) {
+        for (int i = 0; i < s.radius; i += 5) {
             foods.add(new Food(
-                    p.snake.x + (float) (Math.random() * 30 - 15),
-                    p.snake.y + (float) (Math.random() * 30 - 15),
+                    s.x + (float) (Math.random() * 60 - 30),
+                    s.y + (float) (Math.random() * 60 - 30),
                     1
             ));
         }
