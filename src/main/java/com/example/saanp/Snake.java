@@ -4,8 +4,8 @@ import static com.example.saanp.GameLoop.TICK_MS;
 
 public class Snake {
 
-    public float x = (float) (Math.random() * 4000);
-    public float y = (float) (Math.random() * 4000);
+    public float x = (float) (Math.random() * GameRoom.MAP_SIZE);
+    public float y = (float) (Math.random() * GameRoom.MAP_SIZE);
     public double angle = 0;
 
     public float speed = 140f;   // units per second
@@ -36,7 +36,12 @@ public class Snake {
 
         x += Math.cos(angle) * speed * delta;
         y += Math.sin(angle) * speed * delta;
+
+        // ---- BOUNDARY CHECK ----
+        if (x < 0) x = 0;
+        if (x > GameRoom.MAP_SIZE) x = GameRoom.MAP_SIZE;
+        if (y < 0) y = 0;
+        if (y > GameRoom.MAP_SIZE) y = GameRoom.MAP_SIZE;
     }
 
 }
-

@@ -15,7 +15,7 @@ public class GameRoom {
     }
 
     private static final int MAX_FOOD = 300;
-    private static final float MAP_SIZE = 5000f;
+    public static final float MAP_SIZE = 5000f;
 
     private final Map<String, Player> players = new ConcurrentHashMap<>();
     private final List<Food> foods = new CopyOnWriteArrayList<>();
