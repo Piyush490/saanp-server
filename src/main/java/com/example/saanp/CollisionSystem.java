@@ -22,7 +22,7 @@ public class CollisionSystem {
             checkFood(b.snake, foods, foodToRemove);
         }
 
-        // 🟢 Snake vs Snake (Player vs Player, Player vs Bot, Bot vs Bot)
+        // 🟢 Collision Logic (Head-to-Body)
         // Check Players
         for (Player p : players) {
             if (p.snake.dead) continue;
@@ -30,7 +30,7 @@ public class CollisionSystem {
             // vs other players
             for (Player other : players) {
                 if (p == other || other.snake.dead) continue;
-                if (checkCollision(p.snake, other.snake)) {
+                if (checkHeadToBodyCollision(p.snake, other.snake)) {
                     p.snake.dead = true;
                     deadPlayers.add(p);
                     break;
@@ -41,7 +41,7 @@ public class CollisionSystem {
             // vs bots
             for (Bot b : bots) {
                 if (b.snake.dead) continue;
-                if (checkCollision(p.snake, b.snake)) {
+                if (checkHeadToBodyCollision(p.snake, b.snake)) {
                     p.snake.dead = true;
                     deadPlayers.add(p);
                     break;
@@ -56,7 +56,7 @@ public class CollisionSystem {
             // vs players
             for (Player p : players) {
                 if (p.snake.dead) continue;
-                if (checkCollision(b.snake, p.snake)) {
+                if (checkHeadToBodyCollision(b.snake, p.snake)) {
                     b.snake.dead = true;
                     deadBots.add(b);
                     break;
@@ -67,7 +67,7 @@ public class CollisionSystem {
             // vs other bots
             for (Bot other : bots) {
                 if (b == other || other.snake.dead) continue;
-                if (checkCollision(b.snake, other.snake)) {
+                if (checkHeadToBodyCollision(b.snake, other.snake)) {
                     b.snake.dead = true;
                     deadBots.add(b);
                     break;
@@ -91,26 +91,45 @@ public class CollisionSystem {
         for (Food f : foods) {
             float dx = s.x - f.x;
             float dy = s.y - f.y;
+            // Eat food if head overlaps it
             if (dx * dx + dy * dy < s.radius * s.radius) {
-                s.radius += 0.5f; // Slow growth
+                // Diminishing growth: The fatter you are, the less you grow per food.
+                // This keeps width from growing too much while still allowing long snakes.
+                float growthFactor = 0.1f; // Base growth
+                if (s.radius > 30) growthFactor = 0.05f;
+                if (s.radius > 50) growthFactor = 0.02f;
+                if (s.radius > 80) growthFactor = 0.01f;
+                
+                if (s.radius < 100) { // Absolute cap for width
+                    s.radius += growthFactor; 
+                }
                 toRemove.add(f);
             }
         }
     }
 
-    private static boolean checkCollision(Snake head, Snake body) {
+    /**
+     * Proper Head-to-Body collision detection.
+     * Snake 'head' dies if it hits the 'body' snake.
+     */
+    private static boolean checkHeadToBodyCollision(Snake head, Snake body) {
         float dx = head.x - body.x;
         float dy = head.y - body.y;
         float distSq = dx * dx + dy * dy;
-        // If head is inside the body of another snake
-        return distSq < body.radius * body.radius * 0.8f;
+        
+        // Sum of radii squared
+        float combinedRadius = head.radius + body.radius;
+        // Collision if the circles overlap significantly
+        return distSq < (combinedRadius * combinedRadius) * 0.7f;
     }
 
     private static void dropFood(Snake s, List<Food> foods) {
-        for (int i = 0; i < s.radius; i += 5) {
+        // Drop food based on size, but limited
+        int foodCount = (int) (s.radius / 4);
+        for (int i = 0; i < foodCount; i++) {
             foods.add(new Food(
-                    s.x + (float) (Math.random() * 60 - 30),
-                    s.y + (float) (Math.random() * 60 - 30),
+                    s.x + (float) (Math.random() * 80 - 40),
+                    s.y + (float) (Math.random() * 80 - 40),
                     1
             ));
         }
