@@ -30,7 +30,8 @@ public class Snake {
         diff = Math.atan2(Math.sin(diff), Math.cos(diff));
 
         // Turn speed in radians per second
-        double turnSpeed = 3.5; // Slither-like smoothness
+        // Real Slither turn speed is tighter when smaller and slower when larger/boosting
+        double turnSpeed = 4.5; 
 
         float delta = TICK_MS / 1000f;
 
@@ -39,8 +40,8 @@ public class Snake {
         angle += diff;
 
         // ---- SPEED ----
-        float baseSpeed = 140f;
-        float boostSpeed = 240f;
+        float baseSpeed = 160f;
+        float boostSpeed = 300f;
         float currentSpeed = boost ? boostSpeed : baseSpeed;
 
         x += Math.cos(angle) * currentSpeed * delta;

@@ -14,6 +14,7 @@ public class Player {
     public float inputAngle;
     public boolean boosting;
     public long lastSeen;
+    public boolean gameOverSent = false;
 
 
     public Player(Channel channel, String name, int color) {
