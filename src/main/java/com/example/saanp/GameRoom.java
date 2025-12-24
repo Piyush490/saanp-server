@@ -8,12 +8,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class GameRoom {
 
-    private static final GameRoom INSTANCE = new GameRoom();
-
-    public static GameRoom getInstance() {
-        return INSTANCE;
-    }
-
     private static final int MAX_FOOD = 300;
     private static final int MAX_BOTS = 10;
     public static final float MAP_SIZE = 10000f; 
@@ -31,6 +25,12 @@ public class GameRoom {
         0xFFFFC0CB, // Pink
         0xFFFFFFFF  // White
     };
+
+    private static final GameRoom INSTANCE = new GameRoom();
+
+    public static GameRoom getInstance() {
+        return INSTANCE;
+    }
 
     private final Map<String, Player> players = new ConcurrentHashMap<>();
     private final List<Bot> bots = new CopyOnWriteArrayList<>();
