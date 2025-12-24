@@ -12,4 +12,4 @@ COPY --from=build /app/build/libs/*.jar app.jar
 
 EXPOSE 8080
 
-CMD ["java", "-Xms256m", "-Xmx256m", "-jar", "app.jar"]
+CMD ["java", "-Xms512m", "-Xmx512m", "-jar", "app.jar"]
