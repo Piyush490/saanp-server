@@ -14,20 +14,29 @@ public class Snake {
 
     public void update(double targetAngle, boolean boost) {
 
-        double maxTurn = 0.15;
+        // ---- TURNING ----
         double diff = targetAngle - angle;
 
-        // normalize angle difference (-PI to PI)
+        // Normalize to [-PI, PI]
         diff = Math.atan2(Math.sin(diff), Math.cos(diff));
-        angle += Math.max(-maxTurn, Math.min(maxTurn, diff));
 
-        float baseSpeed = 140f;
-        float boostSpeed = 240f;
-        speed = boost ? boostSpeed : baseSpeed;
+        // Turn speed in radians per second
+        double turnSpeed = 3.5; // Slither-like smoothness
 
         float delta = TICK_MS / 1000f;
+
+        double maxTurnThisTick = turnSpeed * delta;
+        diff = Math.max(-maxTurnThisTick, Math.min(maxTurnThisTick, diff));
+        angle += diff;
+
+        // ---- SPEED ----
+        float baseSpeed = 140f;
+        float boostSpeed = 240f;
+        float speed = boost ? boostSpeed : baseSpeed;
+
         x += Math.cos(angle) * speed * delta;
         y += Math.sin(angle) * speed * delta;
     }
+
 }
 
