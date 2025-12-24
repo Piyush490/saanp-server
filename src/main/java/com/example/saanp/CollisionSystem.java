@@ -30,6 +30,7 @@ public class CollisionSystem {
         // Check Players for death
         for (Player p : players) {
             if (p.snake.dead) continue;
+            // Only check head-to-body collisions, ignore head-to-self
             if (checkSnakeDeath(p.snake, allSnakes)) {
                 p.snake.dead = true;
                 deadPlayers.add(p);
@@ -73,16 +74,22 @@ public class CollisionSystem {
         }
     }
 
+    /**
+     * Accurately check if a snake's head has collided with another snake's body.
+     */
     private static boolean checkSnakeDeath(Snake head, List<Snake> allSnakes) {
-        for (Snake body : allSnakes) {
-            if (head == body) continue;
+        for (Snake other : allSnakes) {
+            // NEVER die by touching yourself
+            if (head == other) continue;
             
-            float dx = head.x - body.x;
-            float dy = head.y - body.y;
+            float dx = head.x - other.x;
+            float dy = head.y - other.y;
             float distSq = dx * dx + dy * dy;
-            float collisionDist = head.radius + body.radius;
             
-            if (distSq < (collisionDist * collisionDist) * 0.95f) {
+            // Collision occurs when the head overlaps with another snake's body
+            // We use a tight threshold (0.8 of combined radii) to avoid accidental deaths
+            float collisionDist = head.radius + other.radius;
+            if (distSq < (collisionDist * collisionDist) * 0.65f) {
                 return true;
             }
         }
@@ -90,10 +97,12 @@ public class CollisionSystem {
     }
 
     private static void dropFood(Snake s, List<Food> foods) {
-        for (int i = 0; i < s.score; i++) {
+        // Drop food proportional to size, but not overwhelming
+        int count = Math.min(s.score, 100); 
+        for (int i = 0; i < count; i++) {
             foods.add(new Food(
-                    s.x + (float) (Math.random() * 120 - 60),
-                    s.y + (float) (Math.random() * 120 - 60),
+                    s.x + (float) (Math.random() * 150 - 75),
+                    s.y + (float) (Math.random() * 150 - 75),
                     1
             ));
         }
