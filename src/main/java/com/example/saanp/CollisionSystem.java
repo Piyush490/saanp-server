@@ -115,8 +115,8 @@ public class CollisionSystem {
         
         // Proper physics-based circle collision (sum of radii)
         float collisionDist = head.radius + other.radius;
-        // Using 0.8 as a buffer to allow slight overlap for better feel
-        return distSq < (collisionDist * collisionDist) * 0.8f;
+        // Tighter collision check: die instantly when circles start overlapping
+        return distSq < (collisionDist * collisionDist) * 0.95f;
     }
 
     private static void dropFood(Snake s, List<Food> foods) {
