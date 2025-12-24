@@ -22,50 +22,26 @@ public class CollisionSystem {
             checkFood(b.snake, foods, foodToRemove);
         }
 
-        // 🟢 Collision Logic
+        // 🟢 Collision Logic (Combined Players + Bots)
+        List<Snake> allSnakes = new ArrayList<>();
+        for (Player p : players) if (!p.snake.dead) allSnakes.add(p.snake);
+        for (Bot b : bots) if (!b.snake.dead) allSnakes.add(b.snake);
+
+        // Check Players for death
         for (Player p : players) {
             if (p.snake.dead) continue;
-            
-            for (Player other : players) {
-                if (p == other || other.snake.dead) continue;
-                if (checkHeadToAnyCollision(p.snake, other.snake)) {
-                    p.snake.dead = true;
-                    deadPlayers.add(p);
-                    break;
-                }
-            }
-            if (p.snake.dead) continue;
-
-            for (Bot b : bots) {
-                if (b.snake.dead) continue;
-                if (checkHeadToAnyCollision(p.snake, b.snake)) {
-                    p.snake.dead = true;
-                    deadPlayers.add(p);
-                    break;
-                }
+            if (checkSnakeDeath(p.snake, allSnakes)) {
+                p.snake.dead = true;
+                deadPlayers.add(p);
             }
         }
 
+        // Check Bots for death
         for (Bot b : bots) {
             if (b.snake.dead) continue;
-
-            for (Player p : players) {
-                if (p.snake.dead) continue;
-                if (checkHeadToAnyCollision(b.snake, p.snake)) {
-                    b.snake.dead = true;
-                    deadBots.add(b);
-                    break;
-                }
-            }
-            if (b.snake.dead) continue;
-
-            for (Bot other : bots) {
-                if (b == other || other.snake.dead) continue;
-                if (checkHeadToAnyCollision(b.snake, other.snake)) {
-                    b.snake.dead = true;
-                    deadBots.add(b);
-                    break;
-                }
+            if (checkSnakeDeath(b.snake, allSnakes)) {
+                b.snake.dead = true;
+                deadBots.add(b);
             }
         }
 
@@ -81,37 +57,36 @@ public class CollisionSystem {
     }
 
     private static void checkFood(Snake s, List<Food> foods, List<Food> toRemove) {
-        // Mouth distance for magnet effect: how far the snake can "reach"
         float mouthReach = s.radius * 2.5f; 
-        
         for (Food f : foods) {
             float dx = s.x - f.x;
             float dy = s.y - f.y;
-            float dSq = dx * dx + dy * dy;
-            
-            // If food is within reach, it's considered eaten
-            if (dSq < mouthReach * mouthReach) {
+            if (dx * dx + dy * dy < mouthReach * mouthReach) {
                 s.score++;
-                
                 float growthFactor = 0.1f;
                 if (s.radius > 30) growthFactor = 0.05f;
                 if (s.radius > 50) growthFactor = 0.02f;
                 if (s.radius > 80) growthFactor = 0.01f;
-                
-                if (s.radius < 100) {
-                    s.radius += growthFactor; 
-                }
+                if (s.radius < 100) s.radius += growthFactor; 
                 toRemove.add(f);
             }
         }
     }
 
-    private static boolean checkHeadToAnyCollision(Snake head, Snake other) {
-        float dx = head.x - other.x;
-        float dy = head.y - other.y;
-        float distSq = dx * dx + dy * dy;
-        float collisionDist = head.radius + other.radius;
-        return distSq < (collisionDist * collisionDist) * 0.95f;
+    private static boolean checkSnakeDeath(Snake head, List<Snake> allSnakes) {
+        for (Snake body : allSnakes) {
+            if (head == body) continue;
+            
+            float dx = head.x - body.x;
+            float dy = head.y - body.y;
+            float distSq = dx * dx + dy * dy;
+            float collisionDist = head.radius + body.radius;
+            
+            if (distSq < (collisionDist * collisionDist) * 0.95f) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static void dropFood(Snake s, List<Food> foods) {
