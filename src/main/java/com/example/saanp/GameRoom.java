@@ -8,8 +8,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class GameRoom {
 
-    private static final int MAX_FOOD = 300;
-    private static final int MAX_BOTS = 10;
+    private static final int MAX_FOOD = 600;
+    private static final int MAX_BOTS = 30;
     public static final float MAP_SIZE = 10000f; 
     public static final float MAP_RADIUS = 5000f; 
 
@@ -51,9 +51,9 @@ public class GameRoom {
     }
 
     private void spawnInitialBots() {
-        String[] names = {"SlitherBot", "SaanpAI", "DroidSnake", "Nibbler", "PythonBot", "Viper", "CobraBot", "Mamba", "Anaconda", "Boa"};
+        String[] names = {"SlitherBot", "SaanpAI", "DroidSnake", "Nibbler", "PythonBot", "Viper", "CobraBot", "Mamba", "Anaconda", "Boa", "Racer", "Glider"};
         for (int i = 0; i < MAX_BOTS; i++) {
-            bots.add(new Bot(names[i % names.length], BOT_COLORS[i % BOT_COLORS.length]));
+            bots.add(new Bot(names[i % names.length] + "_" + i, BOT_COLORS[i % BOT_COLORS.length]));
         }
     }
 
@@ -109,9 +109,9 @@ public class GameRoom {
             foods.add(randomFood());
         }
         if (bots.size() < MAX_BOTS) {
-            String[] names = {"BotBuddy", "Snakey", "AI_Player", "Crawler", "Hunter", "Stalker"};
+            String[] names = {"BotBuddy", "Snakey", "AI_Player", "Crawler", "Hunter", "Stalker", "Phantom", "Ghost"};
             int randomColor = BOT_COLORS[(int)(Math.random() * BOT_COLORS.length)];
-            bots.add(new Bot(names[(int)(Math.random() * names.length)], randomColor));
+            bots.add(new Bot(names[(int)(Math.random() * names.length)] + "_" + (int)(Math.random() * 100), randomColor));
         }
     }
 

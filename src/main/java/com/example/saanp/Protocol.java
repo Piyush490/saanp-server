@@ -12,13 +12,15 @@ public class Protocol {
 
         JsonObject data = new JsonObject();
 
-        // Players + Bots
+        // Players + Bots merged into one array for the client
         JsonArray playersArray = new JsonArray();
         
         // Add human players
         for (Player p : room.getPlayers()) {
+            if (p.snake == null) continue;
             JsonObject po = new JsonObject();
             po.addProperty("id", p.channel.id().asShortText());
+            po.addProperty("name", p.name);
             po.addProperty("x", p.snake.x);
             po.addProperty("y", p.snake.y);
             po.addProperty("angle", p.snake.angle);
@@ -33,10 +35,12 @@ public class Protocol {
             }
         }
 
-        // Add bots (so they appear on client)
+        // Add bots
         for (Bot b : room.getBots()) {
+            if (b.snake == null) continue;
             JsonObject bo = new JsonObject();
             bo.addProperty("id", b.id);
+            bo.addProperty("name", b.name);
             bo.addProperty("x", b.snake.x);
             bo.addProperty("y", b.snake.y);
             bo.addProperty("angle", b.snake.angle);
@@ -63,7 +67,7 @@ public class Protocol {
 
         // Broadcast to all active human players
         for (Player p : room.getPlayers()) {
-            if (!p.channel.isActive()) continue;
+            if (p.channel == null || !p.channel.isActive()) continue;
             p.channel.writeAndFlush(new TextWebSocketFrame(json));
         }
     }
@@ -76,6 +80,8 @@ public class Protocol {
         data.addProperty("score", (int) p.snake.radius);
         root.add("data", data);
 
-        p.channel.writeAndFlush(new TextWebSocketFrame(root.toString()));
+        if (p.channel != null && p.channel.isActive()) {
+            p.channel.writeAndFlush(new TextWebSocketFrame(root.toString()));
+        }
     }
 }
