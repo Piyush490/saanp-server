@@ -25,8 +25,8 @@ public class Protocol {
             po.addProperty("y", p.snake.y);
             po.addProperty("angle", p.snake.angle);
             po.addProperty("radius", p.snake.radius);
-            po.addProperty("score", (int) p.snake.radius);
-            po.addProperty("boosting", p.boosting); // Fixed: Added missing field
+            po.addProperty("score", p.snake.score); // Use snake.score directly
+            po.addProperty("boosting", p.boosting);
             po.addProperty("dead", p.snake.dead);
             po.addProperty("color", p.color);
             playersArray.add(po);
@@ -47,8 +47,8 @@ public class Protocol {
             bo.addProperty("y", b.snake.y);
             bo.addProperty("angle", b.snake.angle);
             bo.addProperty("radius", b.snake.radius);
-            bo.addProperty("score", (int) b.snake.radius);
-            bo.addProperty("boosting", false); // Bots don't boost currently
+            bo.addProperty("score", b.snake.score); // Use snake.score directly
+            bo.addProperty("boosting", false);
             bo.addProperty("dead", b.snake.dead);
             bo.addProperty("color", b.color);
             playersArray.add(bo);
@@ -81,7 +81,7 @@ public class Protocol {
         root.addProperty("type", "gameOver");
         
         JsonObject data = new JsonObject();
-        data.addProperty("score", (int) p.snake.radius);
+        data.addProperty("score", p.snake.score); // Use snake.score directly
         root.add("data", data);
 
         if (p.channel != null && p.channel.isActive()) {
