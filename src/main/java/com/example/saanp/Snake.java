@@ -4,15 +4,24 @@ import static com.example.saanp.GameLoop.TICK_MS;
 
 public class Snake {
 
-    public float x = (float) (Math.random() * GameRoom.MAP_SIZE);
-    public float y = (float) (Math.random() * GameRoom.MAP_SIZE);
+    public float x;
+    public float y;
     public double angle = 0;
 
     public float speed = 140f;   // units per second
     public float radius = 18f;
     public boolean dead = false;
 
+    public Snake() {
+        // Spawn inside circular map
+        double spawnAngle = Math.random() * Math.PI * 2;
+        double spawnRadius = Math.sqrt(Math.random()) * (GameRoom.MAP_RADIUS * 0.8f); // 80% of radius to avoid edges
+        this.x = (float) (GameRoom.MAP_RADIUS + Math.cos(spawnAngle) * spawnRadius);
+        this.y = (float) (GameRoom.MAP_RADIUS + Math.sin(spawnAngle) * spawnRadius);
+    }
+
     public void update(double targetAngle, boolean boost) {
+        if (dead) return;
 
         // ---- TURNING ----
         double diff = targetAngle - angle;
@@ -32,16 +41,19 @@ public class Snake {
         // ---- SPEED ----
         float baseSpeed = 140f;
         float boostSpeed = 240f;
-        float speed = boost ? boostSpeed : baseSpeed;
+        float currentSpeed = boost ? boostSpeed : baseSpeed;
 
-        x += Math.cos(angle) * speed * delta;
-        y += Math.sin(angle) * speed * delta;
+        x += Math.cos(angle) * currentSpeed * delta;
+        y += Math.sin(angle) * currentSpeed * delta;
 
-        // ---- BOUNDARY CHECK ----
-        if (x < 0) x = 0;
-        if (x > GameRoom.MAP_SIZE) x = GameRoom.MAP_SIZE;
-        if (y < 0) y = 0;
-        if (y > GameRoom.MAP_SIZE) y = GameRoom.MAP_SIZE;
+        // ---- BOUNDARY CHECK (Circular) ----
+        float dx = x - GameRoom.MAP_RADIUS;
+        float dy = y - GameRoom.MAP_RADIUS;
+        float distSq = dx * dx + dy * dy;
+
+        if (distSq > GameRoom.MAP_RADIUS * GameRoom.MAP_RADIUS) {
+            dead = true;
+        }
     }
 
 }

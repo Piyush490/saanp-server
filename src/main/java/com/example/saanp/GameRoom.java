@@ -15,7 +15,8 @@ public class GameRoom {
     }
 
     private static final int MAX_FOOD = 300;
-    public static final float MAP_SIZE = 5000f;
+    public static final float MAP_SIZE = 10000f; // Total width/height
+    public static final float MAP_RADIUS = 5000f; // Radius from center
 
     private final Map<String, Player> players = new ConcurrentHashMap<>();
     private final List<Food> foods = new CopyOnWriteArrayList<>();
@@ -34,11 +35,13 @@ public class GameRoom {
     }
 
     private Food randomFood() {
-        return new Food(
-                (float) (Math.random() * MAP_SIZE),
-                (float) (Math.random() * MAP_SIZE),
-                1
-        );
+        // Random point inside circular map
+        double angle = Math.random() * Math.PI * 2;
+        double radius = Math.sqrt(Math.random()) * MAP_RADIUS;
+        float x = (float) (MAP_RADIUS + Math.cos(angle) * radius);
+        float y = (float) (MAP_RADIUS + Math.sin(angle) * radius);
+        
+        return new Food(x, y, 1);
     }
 
     public void addPlayer(Player p) {
