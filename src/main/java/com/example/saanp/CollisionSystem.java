@@ -23,11 +23,9 @@ public class CollisionSystem {
         }
 
         // 🟢 Collision Logic
-        // Check Players against everything
         for (Player p : players) {
             if (p.snake.dead) continue;
             
-            // vs other players
             for (Player other : players) {
                 if (p == other || other.snake.dead) continue;
                 if (checkHeadToAnyCollision(p.snake, other.snake)) {
@@ -38,7 +36,6 @@ public class CollisionSystem {
             }
             if (p.snake.dead) continue;
 
-            // vs bots
             for (Bot b : bots) {
                 if (b.snake.dead) continue;
                 if (checkHeadToAnyCollision(p.snake, b.snake)) {
@@ -49,11 +46,9 @@ public class CollisionSystem {
             }
         }
 
-        // Check Bots against everything
         for (Bot b : bots) {
             if (b.snake.dead) continue;
 
-            // vs players
             for (Player p : players) {
                 if (p.snake.dead) continue;
                 if (checkHeadToAnyCollision(b.snake, p.snake)) {
@@ -64,7 +59,6 @@ public class CollisionSystem {
             }
             if (b.snake.dead) continue;
 
-            // vs other bots
             for (Bot other : bots) {
                 if (b == other || other.snake.dead) continue;
                 if (checkHeadToAnyCollision(b.snake, other.snake)) {
@@ -91,6 +85,8 @@ public class CollisionSystem {
             float dx = s.x - f.x;
             float dy = s.y - f.y;
             if (dx * dx + dy * dy < s.radius * s.radius) {
+                s.score++; // Increment score
+                
                 float growthFactor = 0.1f;
                 if (s.radius > 30) growthFactor = 0.05f;
                 if (s.radius > 50) growthFactor = 0.02f;
@@ -104,27 +100,20 @@ public class CollisionSystem {
         }
     }
 
-    /**
-     * More accurate collision check. 
-     * 'head' dies if it touches the body/head of 'other'.
-     */
     private static boolean checkHeadToAnyCollision(Snake head, Snake other) {
         float dx = head.x - other.x;
         float dy = head.y - other.y;
         float distSq = dx * dx + dy * dy;
-        
-        // Proper physics-based circle collision (sum of radii)
         float collisionDist = head.radius + other.radius;
-        // Tighter collision check: die instantly when circles start overlapping
         return distSq < (collisionDist * collisionDist) * 0.95f;
     }
 
     private static void dropFood(Snake s, List<Food> foods) {
-        int foodCount = (int) (s.radius / 4);
-        for (int i = 0; i < foodCount; i++) {
+        // Drop food equal to score
+        for (int i = 0; i < s.score; i++) {
             foods.add(new Food(
-                    s.x + (float) (Math.random() * 80 - 40),
-                    s.y + (float) (Math.random() * 80 - 40),
+                    s.x + (float) (Math.random() * 120 - 60),
+                    s.y + (float) (Math.random() * 120 - 60),
                     1
             ));
         }

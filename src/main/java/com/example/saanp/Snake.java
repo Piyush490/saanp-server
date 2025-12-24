@@ -8,7 +8,8 @@ public class Snake {
     public float y;
     public double angle = 0;
 
-    public float radius = 18f;
+    public float radius = 15f;
+    public int score = 0;
     public boolean dead = false;
 
     public Snake() {
@@ -17,6 +18,7 @@ public class Snake {
         double spawnRadius = Math.sqrt(Math.random()) * (GameRoom.MAP_RADIUS * 0.8f); // 80% of radius to avoid edges
         this.x = (float) (GameRoom.MAP_RADIUS + Math.cos(spawnAngle) * spawnRadius);
         this.y = (float) (GameRoom.MAP_RADIUS + Math.sin(spawnAngle) * spawnRadius);
+        this.angle = spawnAngle; // Start facing outwards
     }
 
     public void update(double targetAngle, boolean boost) {
@@ -30,11 +32,11 @@ public class Snake {
         diff = Math.atan2(Math.sin(diff), Math.cos(diff));
 
         // Turn speed in radians per second.
+        // Smooth constant turning
         double turnSpeed = 3.8; 
         
         double maxTurnThisTick = turnSpeed * delta;
         
-        // Clamp the turn to the max turn speed
         if (Math.abs(diff) > maxTurnThisTick) {
             angle += (diff > 0 ? 1 : -1) * maxTurnThisTick;
         } else {
