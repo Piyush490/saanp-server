@@ -8,7 +8,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class GameRoom {
 
-    private static final int MAX_FOOD = 600;
+    private static final int MAX_FOOD = 1500;
     private static final int MAX_BOTS = 30;
     public static final float MAP_SIZE = 10000f; 
     public static final float MAP_RADIUS = 5000f; 
