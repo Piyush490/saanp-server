@@ -22,13 +22,15 @@ public class CollisionSystem {
             checkFood(b.snake, foods, foodToRemove);
         }
 
-        // 🟢 Collision Logic (Head-to-Body)
+        // 🟢 Collision Logic
+        // Check Players against everything
         for (Player p : players) {
             if (p.snake.dead) continue;
             
+            // vs other players
             for (Player other : players) {
                 if (p == other || other.snake.dead) continue;
-                if (checkHeadToBodyCollision(p.snake, other.snake)) {
+                if (checkHeadToAnyCollision(p.snake, other.snake)) {
                     p.snake.dead = true;
                     deadPlayers.add(p);
                     break;
@@ -36,9 +38,10 @@ public class CollisionSystem {
             }
             if (p.snake.dead) continue;
 
+            // vs bots
             for (Bot b : bots) {
                 if (b.snake.dead) continue;
-                if (checkHeadToBodyCollision(p.snake, b.snake)) {
+                if (checkHeadToAnyCollision(p.snake, b.snake)) {
                     p.snake.dead = true;
                     deadPlayers.add(p);
                     break;
@@ -46,12 +49,14 @@ public class CollisionSystem {
             }
         }
 
+        // Check Bots against everything
         for (Bot b : bots) {
             if (b.snake.dead) continue;
 
+            // vs players
             for (Player p : players) {
                 if (p.snake.dead) continue;
-                if (checkHeadToBodyCollision(b.snake, p.snake)) {
+                if (checkHeadToAnyCollision(b.snake, p.snake)) {
                     b.snake.dead = true;
                     deadBots.add(b);
                     break;
@@ -59,9 +64,10 @@ public class CollisionSystem {
             }
             if (b.snake.dead) continue;
 
+            // vs other bots
             for (Bot other : bots) {
                 if (b == other || other.snake.dead) continue;
-                if (checkHeadToBodyCollision(b.snake, other.snake)) {
+                if (checkHeadToAnyCollision(b.snake, other.snake)) {
                     b.snake.dead = true;
                     deadBots.add(b);
                     break;
@@ -71,8 +77,6 @@ public class CollisionSystem {
 
         foods.removeAll(foodToRemove);
 
-        // 🛑 IMPORTANT: Do not close the channel here. 
-        // We need to keep it open long enough to send the "gameOver" message in Protocol.broadcast()
         for (Player p : deadPlayers) {
             dropFood(p.snake, foods);
         }
@@ -100,12 +104,19 @@ public class CollisionSystem {
         }
     }
 
-    private static boolean checkHeadToBodyCollision(Snake head, Snake body) {
-        float dx = head.x - body.x;
-        float dy = head.y - body.y;
+    /**
+     * More accurate collision check. 
+     * 'head' dies if it touches the body/head of 'other'.
+     */
+    private static boolean checkHeadToAnyCollision(Snake head, Snake other) {
+        float dx = head.x - other.x;
+        float dy = head.y - other.y;
         float distSq = dx * dx + dy * dy;
-        float combinedRadius = head.radius + body.radius;
-        return distSq < (combinedRadius * combinedRadius) * 0.7f;
+        
+        // Proper physics-based circle collision (sum of radii)
+        float collisionDist = head.radius + other.radius;
+        // Using 0.8 as a buffer to allow slight overlap for better feel
+        return distSq < (collisionDist * collisionDist) * 0.8f;
     }
 
     private static void dropFood(Snake s, List<Food> foods) {
