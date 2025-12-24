@@ -10,32 +10,17 @@ import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
-public class HealthCheckHandler
-        extends SimpleChannelInboundHandler<FullHttpRequest> {
+public class HealthCheckHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx,
-                                FullHttpRequest req) {
-
-        if (req.uri().equals("/")) {
-
-            byte[] body = "OK".getBytes();
-
-            FullHttpResponse response =
-                    new DefaultFullHttpResponse(
-                            HTTP_1_1,
-                            OK,
-                            Unpooled.wrappedBuffer(body)
-                    );
-
-            response.headers().set(CONTENT_TYPE, "text/plain");
-            response.headers().set(CONTENT_LENGTH, body.length);
-
-            ctx.writeAndFlush(response);
-            return;
+    protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) {
+        if ("/".equals(req.uri())) {
+            FullHttpResponse res =
+                    new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
+            ctx.writeAndFlush(res).addListener(ChannelFutureListener.CLOSE);
+        } else {
+            ctx.fireChannelRead(req.retain()); // 🔥 REQUIRED
         }
-
-        // Forward WebSocket upgrade requests
-        ctx.fireChannelRead(req.retain());
     }
 }
+
