@@ -8,33 +8,30 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class GameRoom {
 
-    private static final GameRoom INSTANCE = new GameRoom();
-    public static GameRoom getInstance() { return INSTANCE; }
-
-    private static final int MAX_FOOD = 300;
-    private static final int MAX_BOTS = 10;
+    // 1. Static constants first
     public static final float MAP_SIZE = 10000f;
     public static final float MAP_RADIUS = 5000f;
+    private static final int MAX_FOOD = 1500;
+    private static final int MAX_BOTS = 30;
 
     private static final int[] BOT_COLORS = {
             0xFFFF0000, 0xFF00FF00, 0xFF0000FF, 0xFFFFFF00, 0xFFFF00FF,
             0xFF00FFFF, 0xFFFFA500, 0xFF800080, 0xFFFFC0CB, 0xFFFFFFFF
     };
 
+    // 2. Singleton instance AFTER constants
+    private static final GameRoom INSTANCE = new GameRoom();
+    public static GameRoom getInstance() { return INSTANCE; }
+
+    // 3. Instance fields
     private final Map<String, Player> players = new ConcurrentHashMap<>();
     private final List<Bot> bots = new CopyOnWriteArrayList<>();
     private final List<Food> foods = new CopyOnWriteArrayList<>();
-    private final GameLoop loop; // initialized after world is ready
+    private final GameLoop loop;
 
     private GameRoom() {
-        // Build world first (no threads started yet)
         spawnInitialFood();
         spawnInitialBots();
-
-        // If you have a GameLoop with a tick duration, set Snake.TICK_SECONDS accordingly:
-        // Snake.TICK_SECONDS = GameLoop.TICK_MS / 1000f; // ensure GameLoop.TICK_MS is a compile-time constant or harmless
-
-        // Now create and start the loop
         loop = new GameLoop(this);
         loop.start();
     }
@@ -48,7 +45,7 @@ public class GameRoom {
     private void spawnInitialBots() {
         String[] names = {"SlitherBot", "SaanpAI", "DroidSnake", "Nibbler", "PythonBot", "Viper", "CobraBot", "Mamba", "Anaconda", "Boa"};
         for (int i = 0; i < MAX_BOTS; i++) {
-            String name = names[i % names.length];
+            String name = names[i % names.length] + "_" + i;
             int color = BOT_COLORS[i % BOT_COLORS.length];
             bots.add(new Bot(name, color));
         }
@@ -99,7 +96,7 @@ public class GameRoom {
         if (bots.size() < MAX_BOTS) {
             String[] names = {"BotBuddy", "Snakey", "AI_Player", "Crawler", "Hunter", "Stalker"};
             int randomColor = BOT_COLORS[(int)(Math.random() * BOT_COLORS.length)];
-            bots.add(new Bot(names[(int)(Math.random() * names.length)], randomColor));
+            bots.add(new Bot(names[(int)(Math.random() * names.length)] + "_" + (int)(Math.random() * 100), randomColor));
         }
     }
 
