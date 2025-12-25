@@ -11,16 +11,18 @@ public class WebSocketInitializer extends ChannelInitializer<SocketChannel> {
     @Override
     protected void initChannel(SocketChannel ch) {
         ChannelPipeline p = ch.pipeline();
+        
+        // HTTP layer
         p.addLast(new HttpServerCodec());
         p.addLast(new HttpObjectAggregator(65536));
         
-        // 1. Handle HTTP Health Checks first
+        // Handle Health Check (Standard HTTP)
         p.addLast(new HealthCheckHandler());
         
-        // 2. Handle WebSocket handshake for /play
+        // Handle WebSocket handshake
         p.addLast(new WebSocketServerProtocolHandler("/play", null, true));
         
-        // 3. Handle Game Logic
+        // Handle Game Messages (requires framing)
         p.addLast(new WebSocketHandler());
     }
 }
