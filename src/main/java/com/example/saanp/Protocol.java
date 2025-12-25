@@ -3,6 +3,7 @@ package com.example.saanp;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+import io.netty.channel.ChannelFutureListener;
 
 public class Protocol {
 
@@ -11,8 +12,6 @@ public class Protocol {
         root.addProperty("type", "snapshot");
 
         JsonObject data = new JsonObject();
-
-        // Players + Bots merged into one array for the client
         JsonArray playersArray = new JsonArray();
         
         // Add human players
@@ -25,7 +24,7 @@ public class Protocol {
             po.addProperty("y", p.snake.y);
             po.addProperty("angle", p.snake.angle);
             po.addProperty("radius", p.snake.radius);
-            po.addProperty("score", p.snake.score); // Use snake.score directly
+            po.addProperty("score", p.snake.score);
             po.addProperty("boosting", p.boosting);
             po.addProperty("dead", p.snake.dead);
             po.addProperty("color", p.color);
@@ -47,7 +46,7 @@ public class Protocol {
             bo.addProperty("y", b.snake.y);
             bo.addProperty("angle", b.snake.angle);
             bo.addProperty("radius", b.snake.radius);
-            bo.addProperty("score", b.snake.score); // Use snake.score directly
+            bo.addProperty("score", b.snake.score);
             bo.addProperty("boosting", false);
             bo.addProperty("dead", b.snake.dead);
             bo.addProperty("color", b.color);
@@ -69,9 +68,8 @@ public class Protocol {
 
         String json = root.toString();
 
-        // Broadcast to all active human players
         for (Player p : room.getPlayers()) {
-            if (p.channel == null || !p.channel.isActive()) continue;
+            if (p.channel == null || !p.channel.isActive() || p.snake.dead) continue;
             p.channel.writeAndFlush(new TextWebSocketFrame(json));
         }
     }
@@ -81,11 +79,12 @@ public class Protocol {
         root.addProperty("type", "gameOver");
         
         JsonObject data = new JsonObject();
-        data.addProperty("score", p.snake.score); // Use snake.score directly
+        data.addProperty("score", p.snake.score);
         root.add("data", data);
 
         if (p.channel != null && p.channel.isActive()) {
-            p.channel.writeAndFlush(new TextWebSocketFrame(root.toString()));
+            p.channel.writeAndFlush(new TextWebSocketFrame(root.toString()))
+                     .addListener(ChannelFutureListener.CLOSE); // Close channel after notifying client
         }
     }
 }
