@@ -13,9 +13,14 @@ public class WebSocketInitializer extends ChannelInitializer<SocketChannel> {
         ChannelPipeline p = ch.pipeline();
         p.addLast(new HttpServerCodec());
         p.addLast(new HttpObjectAggregator(65536));
+        
+        // 1. Handle HTTP Health Checks first
+        p.addLast(new HealthCheckHandler());
+        
+        // 2. Handle WebSocket handshake for /play
         p.addLast(new WebSocketServerProtocolHandler("/play", null, true));
+        
+        // 3. Handle Game Logic
         p.addLast(new WebSocketHandler());
-        p.addLast(new HealthCheckHandler()); // ← move here
     }
-
 }
